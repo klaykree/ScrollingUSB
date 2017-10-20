@@ -1,0 +1,102 @@
+;
+; ScrollingUSB.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=USBDevice
+ClassGuid={88BAE032-5A81-49f0-BC3D-A4FF138216D6}
+Provider=%ManufacturerName%
+CatalogFile=ScrollingUSB.cat
+DriverVer=
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ScrollingUSB.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%ScrollingUSB.DeviceDesc%=ScrollingUSB_Device, USB\VID_0483&PID_5750
+
+[ScrollingUSB_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+ScrollingUSB.sys
+
+[ScrollingUSB_Device.NT.HW]
+AddReg=ScrollingUSB_AddReg
+
+[ScrollingUSB_AddReg]
+; By default, USBDevice class uses iProduct descriptor to name the device in
+; Device Manager on Windows 8 and higher.
+; Uncomment for this device to use %DeviceName% on Windows 8 and higher:
+;HKR,,FriendlyName,,%ScrollingUSB.DeviceDesc%
+
+;-------------- Class definition
+
+;[ClassInstall32]
+;AddReg = ClassInstall_AddReg
+
+;[ClassInstall_AddReg]
+;HKR,,,,%ClassName%
+;HKR,,NoInstallClass,,1
+;HKR,,IconPath,%REG_MULTI_SZ%,"%%systemroot%%\system32\setupapi.dll,-20"
+;HKR,,LowerLogoVersion,,5.2
+
+;-------------- Service installation
+[ScrollingUSB_Device.NT.Services]
+AddService = ScrollingUSB,%SPSVCINST_ASSOCSERVICE%, ScrollingUSB_Service_Inst
+
+; -------------- ScrollingUSB driver install sections
+[ScrollingUSB_Service_Inst]
+DisplayName    = %ScrollingUSB.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ScrollingUSB.sys
+
+;
+;--- ScrollingUSB_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+ScrollingUSB_Device_CoInstaller_CopyFiles = 11
+
+[ScrollingUSB_Device.NT.CoInstallers]
+AddReg=ScrollingUSB_Device_CoInstaller_AddReg
+CopyFiles=ScrollingUSB_Device_CoInstaller_CopyFiles
+
+[ScrollingUSB_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[ScrollingUSB_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[ScrollingUSB_Device.NT.Wdf]
+KmdfService =  ScrollingUSB, ScrollingUSB_wdfsect
+[ScrollingUSB_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="Kree"
+ClassName="Universal Serial Bus devices"
+DiskName = "ScrollingUSB Installation Disk"
+ScrollingUSB.DeviceDesc = "ScrollingUSB Device"
+ScrollingUSB.SVCDESC = "ScrollingUSB Service"
+REG_MULTI_SZ = 0x00010000
